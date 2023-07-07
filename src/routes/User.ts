@@ -1,6 +1,6 @@
 import express from "express"
 import { Router, Request, Response } from "express"
-import mysql from "../MySQL"
+import {getData, setData} from "../MySQL"
 import {Field} from "mysql2"
 const app = express.Router()
 
@@ -9,25 +9,32 @@ const app = express.Router()
 //   console.log('The solution is: ', results[0].solution);
 // });
 
-
-app.get("/", (req:Request,res:Response) => {
-  res.send("Get all users");
+app.get("/", async (req:Request,res:Response) => {
+  const query = await getData("select * from users")
+  res.send(query)
 })
 
-app.get("/:id", (req:Request,res:Response) => {
-  res.send(`User ID passed id ${req.params.id}`)
+app.get("/:id", async (req:Request,res:Response) => {
+  const query = await getData(`select * from users where userID = ${req.params.id}`)
+  res.send(query)
 })
 
-app.post("/new", (req:Request,res:Response) => {
-  console.log(req.body);
-  res.send("ok")
+app.post("/new", async (req:Request,res:Response) => {
+  console.log(req.body.Email);
+  const query = await setData(`insert into users(FirstName,LastName,Birthday,Email)values('${req.body.FirstName}','${req.body.LastName}','${req.body.Birthday}','${req.body.Email}')`)
+  if(query.errno){
+    res.status(400)
+    res.send(query)
+  }
+  res.status(200)
+  res.send("User created Successfully")
 })
 
-app.put("/:id", (req:Request,res:Response) => {
+app.put("/:id", async (req:Request,res:Response) => {
   res.send("update method")
 })
 
-app.delete("/:id", (req:Request,res:Response) => {
+app.delete("/:id", async (req:Request,res:Response) => {
   res.send("Delete user method")
 })
 
